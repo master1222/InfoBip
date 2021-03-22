@@ -22,6 +22,7 @@ public class TournamentResource {
     @Autowired
     TournamentService tournamentService;
 
+    //GET request handler - get list of matches
     @RequestMapping("/draw")
     public ResponseEntity<Map<String, List<Match>>> drawTournament() {
         try {
@@ -35,6 +36,7 @@ public class TournamentResource {
         }
     }
 
+    // PUT request handler - update result of match
     @PutMapping("/results/{matchId}")
     public ResponseEntity<Map<String, String>> updateScore(@PathVariable(value = "matchId") Integer matchId, @RequestBody Map<String, Object> match) {
         String result = (String) match.get("result");
@@ -49,18 +51,19 @@ public class TournamentResource {
         }
     }
 
-@RequestMapping("winner")
-    public ResponseEntity<Map<String,List<Player>>> getWinners() {
-    try {
-        List<Player> winners = tournamentService.getWinners();
-        Map<String, List<Player>> map = new HashMap<String, List<Player>>();
-        map.put("winners", winners);
-        return new ResponseEntity<>(map, HttpStatus.OK);
-    } catch (EtInputException e) {
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, e.getMessage());
+    //GET request handler - get list of winners
+    @RequestMapping("winner")
+    public ResponseEntity<Map<String, List<Player>>> getWinners() {
+        try {
+            List<Player> winners = tournamentService.getWinners();
+            Map<String, List<Player>> map = new HashMap<String, List<Player>>();
+            map.put("winners", winners);
+            return new ResponseEntity<>(map, HttpStatus.OK);
+        } catch (EtInputException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
-}
 }
 
 

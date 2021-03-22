@@ -19,16 +19,21 @@ public class TournamentServiceImplementation implements TournamentService {
     TournamentRepository tournamentRepository;
     PlayerRepository playerRepository;
 
+
+    //Drawing of tournament. no inputs are required
     @Override
     public List<Match> drawTournament() throws EtInputException {
         return tournamentRepository.draw();
     }
 
+    //Update result of match
     @Override
     public void setResult(Integer matchId, String result) throws EtInputException {
         tournamentRepository.updateMatchResult(matchId,result);
     }
 
+    //Get list of players with the highest score.
+    // Tournament Repository is returning List of map, because of that conversion is necessary.
     @Override
     public List<Player> getWinners() throws EtInputException {
         List<Map<String,Object>> playersMap = tournamentRepository.findByScore();

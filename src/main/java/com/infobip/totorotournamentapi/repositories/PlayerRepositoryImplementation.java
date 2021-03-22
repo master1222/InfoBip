@@ -25,6 +25,7 @@ public class PlayerRepositoryImplementation  implements  PlayerRepository{
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    //Add player to database
     @Override
     public Integer create(String name, Integer age) throws EtInputException {
         try{
@@ -42,11 +43,13 @@ public class PlayerRepositoryImplementation  implements  PlayerRepository{
         }
     }
 
+    //Return player by Id of player
     @Override
     public Player findById(Integer playerId) {
         return jdbcTemplate.queryForObject(SQL_FIND_BY_ID, new Object[]{playerId}, playerRowMapper);
     }
 
+    //Return current count of players
     @Override
     public Integer getPlayersCount() {
         Integer i = jdbcTemplate.queryForObject(SQL_PLAYERS_COUNT,new Object[]{},Integer.class);

@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @Transactional
 public class PlayerServiceImplementation implements  PlayerService{
@@ -16,8 +14,7 @@ public class PlayerServiceImplementation implements  PlayerService{
     @Autowired
     PlayerRepository playerRepository;
 
-
-
+    // Add player service - check if inputs are not empty and count of players is not bigger than is allowed (Total count is 6)
     @Override
     public Player addPlayer(String name, Integer age) throws  EtInputException{
 

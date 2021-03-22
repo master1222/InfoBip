@@ -23,6 +23,7 @@ public class PlayerResource {
     @Autowired
     PlayerService playerService;
 
+    //POST request handler - adding new player to tournament
     @PostMapping("/players")
     public ResponseEntity<Player> addUser(@RequestBody Map<String, Object> playerMap) {
         String name = (String) playerMap.get("name");

@@ -35,12 +35,12 @@ public class TournamentRepositoryImplementation implements TournamentRepository 
 
     @Autowired
     JdbcTemplate jdbcTemplate;
-    //PlayerRepository playerRepository;
 
+    //Draw tournament - check count of players, possibility to draw a tournament with 4 players
     @Override
     public List<Match> draw() {
         List<Map<String, Object>> players = this.getPlayers();
-        if (players.size() < 4 || players.size()%2==1) throw new EtInputException("Not enought players for draw!");
+        if (players.size() < 4 || players.size() % 2 == 1) throw new EtInputException("Not enought players for draw!");
         List<Match> matches = this.generateMatches(this.getPlayers());
         this.jdbcTemplate.batchUpdate(
                 SQL_INSERT_MATCH,
@@ -61,25 +61,29 @@ public class TournamentRepositoryImplementation implements TournamentRepository 
         return getMatches();
     }
 
+    //Get list of winners - select users from table by max value of field score
     @Override
     public List<Map<String, Object>> findByScore() {
         return jdbcTemplate.queryForList(SQL_GET_WINNER);
     }
 
+    //Return match details by id of match
     @Override
     public Match findById(Integer MatchId) {
         try {
             return jdbcTemplate.queryForObject(SQL_MATCH_BY_ID, new Object[]{MatchId}, matchRowMapper);
-        }catch (EmptyResultDataAccessException e){
+        } catch (EmptyResultDataAccessException e) {
             throw new EtInputException("Wrong Id of match");
         }
     }
 
+    //Get already added players - functionality is required for draw tournament
     @Override
     public List<Map<String, Object>> getPlayers() {
         return jdbcTemplate.queryForList(SQL_GET_PLAYERS);
     }
 
+    // Update result of match - check who is winner of match and then update score of players
     @Override
     public void updateMatchResult(Integer matchId, String result) {
         Match match = this.findById(matchId);
@@ -106,6 +110,7 @@ public class TournamentRepositoryImplementation implements TournamentRepository 
         }
     }
 
+    //Update score of player in database
     @Override
     public void updatePlayerScore(Integer playerId, Integer score) {
 
@@ -121,6 +126,7 @@ public class TournamentRepositoryImplementation implements TournamentRepository 
         }
     }
 
+    //Looking for player by Id of player
     @Override
     public Player findPlayerById(Integer playerId) {
         return jdbcTemplate.queryForObject(SQL_FIND_BY_ID, new Object[]{playerId}, playerRowMapper);
@@ -140,20 +146,25 @@ public class TournamentRepositoryImplementation implements TournamentRepository 
                 resultSet.getInt("SCORE"));
     });
 
-    private List<Match> getMatches(){
+    //Return list of matches
+    private List<Match> getMatches() {
         return jdbcTemplate.query(SQL_GET_MATCHES,
-                new RowMapper<Match>(){
+                new RowMapper<Match>() {
                     @Override
                     public Match mapRow(ResultSet rs, int rowNum) throws SQLException {
                         Match match = new Match(rs.getInt("MATCH_ID"),
-                                                rs.getInt("FIRST_PLAYER_ID"),
-                                                rs.getInt("SECOND_PLAYER_ID"),"");
+                                rs.getInt("FIRST_PLAYER_ID"),
+                                rs.getInt("SECOND_PLAYER_ID"), "");
                         return match;
-                    };
+                    }
+
                 });
     }
 
-
+    // Functionality to make a combination of added players in following steps:
+    // 1. Array of players is shuffled
+    // 2. Make a match between neighboring players
+    // 3. Split array of players on two with the same length and combine the players again
     private List<Match> generateMatches(List<Map<String, Object>> players) {
         List<Match> matches = new ArrayList<Match>();
         Collections.shuffle(players);
@@ -162,18 +173,19 @@ public class TournamentRepositoryImplementation implements TournamentRepository 
             Integer opponentId = (Integer) players.get((i + 1) % players.size()).get("PLAYER_ID");
             matches.add(new Match(0, playerId, opponentId, ""));
         }
-        for (int i = 0; i < players.size()/2; i++) {
+        for (int i = 0; i < players.size() / 2; i++) {
             Integer playerId = (Integer) players.get(i).get("PLAYER_ID");
-            Integer opponentId = (Integer) players.get(players.size()/2+i).get("PLAYER_ID");
+            Integer opponentId = (Integer) players.get(players.size() / 2 + i).get("PLAYER_ID");
             matches.add(new Match(0, playerId, opponentId, ""));
         }
         return matches;
-}
+    }
+
+    //Check which player is winner by result
     private boolean isFirstPlayerWinner(String result) {
         try {
             String[] results = result.split(":");
-            if (Integer.parseInt(results[0]) > Integer.parseInt(results[1])) return true;
-            return false;
+            return Integer.parseInt(results[0]) > Integer.parseInt(results[1]);
         } catch (Exception e) {
             throw new EtInputException("Wrong result format!");
         }
